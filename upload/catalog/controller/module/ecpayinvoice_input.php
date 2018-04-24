@@ -57,16 +57,49 @@ if( $ecpayinvoice_enabled )
 	$("#button-payment-method").click(function(){
 		
 		var invoice_type = $('input:radio[name="invoice_type"]:checked').val();
+
 		if(invoice_type == null)
 		{
 			alert("請選擇發票開立類型");
 		}
 		else
 		{
-		
-			//寫入發票資訊
 			var company_write 	= $("#company_write").val()
 			var love_code 		= $("#love_code").val()
+
+			// 統一編號檢查
+			if (invoice_type == 2)
+			{
+				if (company_write === '')
+				{
+					alert("請填寫統一編號");
+					return false;
+				}
+
+				var result = company_write.match(/^\d{8}$/);
+				if(result == null)
+				{
+					alert("統一編號格式錯誤");
+					return false;
+				}
+			}
+
+			// 愛心碼檢查
+			if (invoice_type == 3)
+			{
+				if (love_code === '')
+				{
+					alert("請填寫愛心碼");
+					return false;
+				}
+
+				var result = love_code.match(/^([xX]{1}[0-9]{2,6}|[0-9]{3,7})$/);
+				if(result == null)
+				{
+					alert("愛心碼格式錯誤");
+					return false;
+				}
+			}
 			
 			$.ajax({
 				type: 'POST',

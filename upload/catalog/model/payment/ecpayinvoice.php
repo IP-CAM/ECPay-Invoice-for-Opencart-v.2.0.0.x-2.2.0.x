@@ -102,7 +102,7 @@ class ModelPaymentecpayinvoice extends Model {
 		if( $query_invoice->num_rows == 0 )
 		{
 			$bError = true ;
-			$sMsg .= ( empty($sMsg) ? '' : WEB_MESSAGE_NEW_LINE ) . '開立發票資訊不存在。';
+			$sMsg .= ( empty($sMsg) ? '' : WEB_MESSAGE_NEW_LINE ) . '開立發票資訊不存在，請檢查您的綠界金流版本。';
 		}
 		else
 		{
@@ -193,16 +193,14 @@ class ModelPaymentecpayinvoice extends Model {
 				 	$sProduct_Note = $value['model'] . '-' . $value['product_id'] ;
 				 	
 				 	mb_internal_encoding('UTF-8');
-				 	$nString_Limit 	= 10 ;
+				 	$nString_Limit 	= 40 ;
 				 	$nSource_Length = mb_strlen($sProduct_Note);
 				 	
 				 	if ( $nString_Limit < $nSource_Length )
 			                {
-			                        $nString_Limit = $nString_Limit - 3;
-						
 			                        if ( $nString_Limit > 0 )
 			                        {
-			                                $sProduct_Note = mb_substr($sProduct_Note, 0, $nString_Limit) . '...';
+			                                $sProduct_Note = mb_substr($sProduct_Note, 0, $nString_Limit)  ;
 			                        }
 			                }
 				 	
@@ -227,10 +225,38 @@ class ModelPaymentecpayinvoice extends Model {
 				{
 					$sMsg_P2 .= ( empty($sMsg_P2) ? '' : WEB_MESSAGE_NEW_LINE ) . '綠界科技電子發票開立，實際金額 $' . $nSub_Total . '， 無條件進位後 $' . $nSub_Total_Real;
 				}
+
+				// 加總除了商品以外的項目金額 v1.0.11115
+				foreach( $aOrder_Total_Tmp as $key2 => $value2)
+				{
+					if($value2['code'] != 'sub_total' && $value2['code'] != 'total')
+					{
+						$nSub_Total_Real = $nSub_Total_Real + (int) $value2['value'];
+						
+						array_push($ecpay_invoice->Send['Items'], array('ItemName' => $value2['title'], 'ItemCount' => 1, 'ItemWord' => '批', 'ItemPrice' => (int) $value2['value'], 'ItemTaxType' => 1, 'ItemAmount' => (int) $value2['value'], 'ItemRemark' => $value2['title'] )) ;
+
+					}
+				}
+
+				// check table exist
+				$card_table_exist = $this->db->query("SHOW TABLES LIKE 'order_extend'");
+				$card_table_exist_tmp = $card_table_exist->num_rows ;
+
+				$sInvoiceRemark = '' ;
 				
-				
-				//$RelateNumber 	= 'ECPAY'. date('YmdHis') . rand(1000000000,2147483647) ; // 產生測試用自訂訂單編號
+				if($card_table_exist_tmp == 1)
+				{	
+					// 判斷是否信用卡後四碼欄位有值，如果有值則寫入備註中 v1.0.11115
+					$query = $this->db->query("SELECT card_no4 FROM order_extend WHERE order_id = '" . (int)$order_id . "' LIMIT 1 " );
+
+					if( $query->num_rows != 0 )
+					{
+						$sInvoiceRemark .= $query->rows[0]['card_no4'] ;
+					}
+				}
+
 				$RelateNumber	= $order_id ;
+				// $RelateNumber 	= 'ECPAY'. date('YmdHis') . rand(1000000000,2147483647) ; // 產生測試用自訂訂單編號
 				
 				$ecpay_invoice->Send['RelateNumber'] 			= $RelateNumber ;
 				$ecpay_invoice->Send['CustomerID'] 			= '' ;
@@ -249,7 +275,7 @@ class ModelPaymentecpayinvoice extends Model {
 				$ecpay_invoice->Send['SalesAmount'] 			= $nSub_Total_Real ;	
 				$ecpay_invoice->Send['InvType'] 			= '07' ;
 				$ecpay_invoice->Send['vat'] 				= '' ;
-				$ecpay_invoice->Send['InvoiceRemark'] 			= 'OC2_ECPayInvoice_1.0.10316' ;
+				$ecpay_invoice->Send['InvoiceRemark'] 			= $sInvoiceRemark ;
 				
 				// C.送出與返回
 				$aReturn_Info = $ecpay_invoice->Check_Out();
