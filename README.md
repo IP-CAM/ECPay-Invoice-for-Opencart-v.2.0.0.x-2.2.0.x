@@ -1,3 +1,26 @@
+# 绿界 科技 电子 invoice integrated interpolation OpenCART2.0 shopping cart
+---
+
+## 1 Introduction
+
+   - Green Technology Electronic Invoice External Suite, providing cooperation special stores and personal members to use open original code store systems, no self-processing complex queues, can quickly interpret the green technology system quickly through the installation setup kit, Electronic invoices are typically opened.
+
+
+## 2. Support version
+    - OpenCART VERSION 2.0.0.0 ~ 2.2.0.0
+
+ 
+
+## 3. Precautions
+   - The plug-in suite supports only the UTF8 language version of the PHP store system.
+
+ 
+
+## 4. Contact us
+   - Green Technical Service Engineer Mailbox: Techsupport@ecpay.com.tw
+   - 
+------------
+
 # 綠界科技 電子發票整合介接 OpenCart2.0 購物車版
 ---
 
@@ -18,10 +41,3 @@
 
 ## 4. 聯絡我們
   - 綠界技術服務工程師信箱: techsupport@ecpay.com.tw
-
-
-
-
-
-
-   
